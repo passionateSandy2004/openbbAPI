@@ -1,27 +1,27 @@
 # FastAPI and server
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
+fastapi
+uvicorn[standard]
+pydantic
 
 # Data processing
 pandas
-numpy==1.26.2
+numpy
 
 # Data sources
-kiteconnect==4.1.0
-yfinance==0.2.32
+kiteconnect
+yfinance
 
 # Technical analysis
 # pandas-ta - Optional fallback library, install from GitHub if needed:
 # pip install git+https://github.com/twopirllc/pandas-ta.git
 
 # OpenBB Platform (optional but recommended)
-openbb==4.0.0b1
-openbb-technical==1.0.0
+openbb
+openbb-technical
 
 # Environment variables
-python-dotenv==1.0.0
+python-dotenv
 
 # Utilities
-requests==2.31.0
+requests
 
