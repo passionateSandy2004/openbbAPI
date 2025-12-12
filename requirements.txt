@@ -4,7 +4,7 @@ uvicorn[standard]==0.24.0
 pydantic==2.5.0
 
 # Data processing
-pandas==2.1.3
+pandas
 numpy==1.26.2
 
 # Data sources
@@ -12,7 +12,8 @@ kiteconnect==4.1.0
 yfinance==0.2.32
 
 # Technical analysis
-pandas-ta
+# pandas-ta - Optional fallback library, install from GitHub if needed:
+# pip install git+https://github.com/twopirllc/pandas-ta.git
 
 # OpenBB Platform (optional but recommended)
 openbb==4.0.0b1
