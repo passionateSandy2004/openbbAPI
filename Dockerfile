@@ -24,7 +24,7 @@ WORKDIR /app
 COPY --from=builder /root/.local /root/.local
 
 # Copy application files
-COPY api.py analysis_service.py main.py ./
+COPY api.py analysis_service.py main.py start.sh ./
 
 # Make sure scripts in .local are usable
 ENV PATH=/root/.local/bin:$PATH
@@ -40,7 +40,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
 # Make start script executable
-RUN chmod +x start.sh 2>/dev/null || true
+RUN chmod +x /app/start.sh
 
 # Run the application
 # Railway sets PORT automatically, defaults to 8000
