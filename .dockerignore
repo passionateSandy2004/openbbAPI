@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+test.ipynb
+*.ipynb
+.pytest_cache/
+.coverage
+
+# Output files
+output/
+*.csv
+*.json
+*.html
+*.png
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Client (not needed for API)
+client.py
+
