@@ -12,7 +12,7 @@ kiteconnect==4.1.0
 yfinance==0.2.32
 
 # Technical analysis
-pandas-ta==0.3.14b0
+pandas-ta
 
 # OpenBB Platform (optional but recommended)
 openbb==4.0.0b1
