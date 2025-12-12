@@ -11,13 +11,14 @@ numpy
 kiteconnect
 yfinance
 
+pandas-ta>=0.3.14b0
 # Technical analysis
 # pandas-ta - Optional fallback library, install from GitHub if needed:
 # pip install git+https://github.com/twopirllc/pandas-ta.git
 
 # OpenBB Platform (optional but recommended)
-openbb
-openbb-technical
+#openbb
+#openbb-technical
 
 # Environment variables
 python-dotenv
