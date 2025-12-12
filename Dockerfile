@@ -13,8 +13,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 # Upgrade pip first
 RUN pip install --upgrade pip
-# Install pandas-ta from GitHub first (required by openbb, not available on PyPI)
-RUN pip install --no-cache-dir --user git+https://github.com/twopirllc/pandas-ta.git
+# Install pandas-ta from GitHub (required by openbb, not available on PyPI in required version)
+# Clone manually to avoid git credential prompts - set GIT_TERMINAL_PROMPT=0 to prevent prompts
+RUN GIT_TERMINAL_PROMPT=0 git clone --depth 1 https://github.com/twopirllc/pandas-ta.git /tmp/pandas-ta && \
+    cd /tmp/pandas-ta && \
+    pip install --no-cache-dir --user . && \
+    cd /app && \
+    rm -rf /tmp/pandas-ta
 # Then install other requirements (includes openbb[technical])
 RUN pip install --no-cache-dir --user -r requirements.txt
 
