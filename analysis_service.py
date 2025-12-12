@@ -64,6 +64,48 @@ INDICATOR_CATALOG: Dict[str, Dict[str, Any]] = {
 }
 
 
+def get_available_indicators() -> Dict[str, Any]:
+    """
+    Return indicator metadata for discovery.
+
+    We expose:
+    - supported: all indicators in the catalog
+    - available_now: indicators that can run in the current runtime (manual always; obb only if extension installed; ta only if pandas_ta installed)
+    """
+    supported = []
+    available_now = []
+
+    for name, cfg in sorted(INDICATOR_CATALOG.items(), key=lambda x: x[0]):
+        kind = cfg.get("kind")
+        item = {
+            "name": name,
+            "kind": kind,
+            "min_bars": cfg.get("min_bars", 1),
+            "params": cfg.get("params", {}) or {},
+        }
+        supported.append(item)
+
+        is_available = False
+        if kind == "manual":
+            is_available = True
+        elif kind == "obb":
+            is_available = bool(obb_technical_available and obb is not None)
+        elif kind == "ta":
+            is_available = ta is not None
+
+        if is_available:
+            available_now.append(item)
+
+    return _sanitize_for_json(
+        {
+            "openbb_technical_available": bool(obb_technical_available and obb is not None),
+            "pandas_ta_available": ta is not None,
+            "supported": supported,
+            "available_now": available_now,
+        }
+    )
+
+
 def _require_ohlcv(out: pd.DataFrame) -> Tuple[bool, str]:
     required_cols = ["Open", "High", "Low", "Close", "Volume"]
     missing = [c for c in required_cols if c not in out.columns]

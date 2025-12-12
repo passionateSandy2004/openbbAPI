@@ -60,6 +60,22 @@ def main():
         help="Optional path to save data rows as CSV",
     )
     parser.add_argument(
+        "--plot",
+        action="store_true",
+        default=False,
+        help="Generate an interactive HTML chart (requires plotly).",
+    )
+    parser.add_argument(
+        "--plot-file",
+        default="chart.html",
+        help="Output HTML file for --plot (default: chart.html)",
+    )
+    parser.add_argument(
+        "--plot-cols",
+        nargs="*",
+        help="Optional list of columns to plot as overlays (e.g., SMA_20 EMA_20 VWAP). If omitted, auto-detects common indicator columns.",
+    )
+    parser.add_argument(
         "--base_url",
         default="https://openbbapi-production.up.railway.app",
         help="Base URL of the FastAPI service",
@@ -117,6 +133,94 @@ def main():
                 print(f"Saved CSV to {args.save_csv}")
             except Exception as e:
                 print(f"Failed to save CSV: {e}", file=sys.stderr)
+
+        if args.plot:
+            try:
+                import pandas as pd
+                import plotly.graph_objects as go
+
+                df = pd.DataFrame(rows)
+                if df.empty:
+                    print("No data rows returned; skipping plot.", file=sys.stderr)
+                    return
+
+                # Pick a datetime-like x axis
+                x_col = None
+                for candidate in ["date", "datetime", "time", "index", "Date", "Datetime", "Time", "Index"]:
+                    if candidate in df.columns:
+                        x_col = candidate
+                        break
+                if x_col is None:
+                    # Try any column that parses as datetime for most rows
+                    for c in df.columns:
+                        parsed = pd.to_datetime(df[c], errors="coerce")
+                        if parsed.notna().sum() >= max(3, int(0.8 * len(df))):
+                            df[c] = parsed
+                            x_col = c
+                            break
+                if x_col is None:
+                    raise ValueError("Could not find a datetime column in response rows.")
+
+                df[x_col] = pd.to_datetime(df[x_col], errors="coerce")
+                df = df.sort_values(x_col)
+
+                has_ohlc = all(c in df.columns for c in ["Open", "High", "Low", "Close"])
+                fig = go.Figure()
+
+                if has_ohlc:
+                    fig.add_trace(
+                        go.Candlestick(
+                            x=df[x_col],
+                            open=df["Open"],
+                            high=df["High"],
+                            low=df["Low"],
+                            close=df["Close"],
+                            name="OHLC",
+                        )
+                    )
+                elif "Close" in df.columns:
+                    fig.add_trace(go.Scatter(x=df[x_col], y=df["Close"], mode="lines", name="Close"))
+                else:
+                    raise ValueError("Response rows missing OHLC/Close columns; cannot plot price.")
+
+                # Determine overlay columns
+                overlay_cols = list(args.plot_cols) if args.plot_cols else []
+                if not overlay_cols:
+                    # Auto-detect common indicator columns present in the response
+                    prefixes = ("SMA_", "EMA_", "BB", "VWAP", "ATR_", "RSI_", "MACD", "ICH_")
+                    for c in df.columns:
+                        if c in ("Open", "High", "Low", "Close", "Volume", x_col):
+                            continue
+                        if c.startswith(prefixes):
+                            overlay_cols.append(c)
+
+                # Plot overlays (best-effort; skip non-numeric)
+                for c in overlay_cols:
+                    if c not in df.columns:
+                        continue
+                    if not pd.api.types.is_numeric_dtype(df[c]):
+                        # Try coercion
+                        y = pd.to_numeric(df[c], errors="coerce")
+                    else:
+                        y = df[c]
+                    if y.notna().sum() == 0:
+                        continue
+                    fig.add_trace(go.Scatter(x=df[x_col], y=y, mode="lines", name=c))
+
+                fig.update_layout(
+                    title=f"{data.get('ticker')} ({data.get('exchange')}) {data.get('start')} → {data.get('end')}",
+                    xaxis_title="Date",
+                    yaxis_title="Price / Indicators",
+                    legend_title="Series",
+                    template="plotly_white",
+                    xaxis_rangeslider_visible=False,
+                )
+                fig.write_html(args.plot_file, include_plotlyjs="cdn")
+                print(f"Saved chart to {args.plot_file}")
+            except ImportError:
+                print("Plotting requires plotly. Install it with: pip install plotly", file=sys.stderr)
+            except Exception as e:
+                print(f"Failed to generate plot: {e}", file=sys.stderr)
     except requests.HTTPError as e:
         status = e.response.status_code
         body = e.response.text

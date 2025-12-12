@@ -20,7 +20,7 @@ from typing import Optional, List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from analysis_service import analyze_ticker
+from analysis_service import analyze_ticker, get_available_indicators
 
 app = FastAPI(title="Trading Analysis Backend", version="1.0.0")
 
@@ -42,6 +42,12 @@ class AnalyzeRequest(BaseModel):
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+@app.get("/indicators")
+def indicators() -> dict:
+    """List supported indicators and which are available in the current runtime."""
+    return get_available_indicators()
 
 
 @app.post("/analyze")
