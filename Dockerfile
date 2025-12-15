@@ -1,5 +1,6 @@
 # Multi-stage build for production
-FROM python:3.11-slim as builder
+# Use Python 3.12 in Docker so that pandas-ta has compatible wheels
+FROM python:3.12-slim as builder
 
 WORKDIR /app
 
@@ -16,7 +17,7 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Production stage
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
